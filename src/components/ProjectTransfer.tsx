@@ -149,7 +149,9 @@ function ImportProjectModal({ data, onClose }: { data: ProjectFile | null; onClo
   if (!data) return null
   const exCount = data.planExercises.length
   const days = data.planDays.filter((d) => d.name || data.planExercises.some((e) => e.dayId === d.id)).length
-  const media = data.planDays.reduce((a, d) => a + d.media.length, 0)
+  const media =
+    data.planDays.reduce((a, d) => a + d.media.length, 0) +
+    data.planExercises.reduce((a, e) => a + (e.media?.length ?? 0), 0)
   const hasHistory = data.sessions.length > 0
   const hasPhotos = data.photos.length > 0
   const keepDates = (history && hasHistory) || (photos && hasPhotos)

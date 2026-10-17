@@ -79,6 +79,8 @@ export interface ExerciseBase {
   restSec?: number
   target: string
   notes: string
+  /** vídeos e links de referência da execução */
+  media?: MediaItem[]
 }
 
 export interface PlanExercise extends ExerciseBase {

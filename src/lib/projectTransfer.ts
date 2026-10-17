@@ -58,8 +58,14 @@ async function projectData(projectId: string) {
   return { project, planDays, planExercises, sessions, sessionExercises, sets, photos }
 }
 
-const videoFileIds = (days: PlanDay[]) =>
-  days.flatMap((d) => d.media.filter((m) => m.kind === 'video-file' && m.fileId).map((m) => m.fileId!))
+const isVideoFile = (m: MediaItem) => m.kind === 'video-file' && !!m.fileId
+const videoIdsOf = (media: MediaItem[] = []) => media.filter(isVideoFile).map((m) => m.fileId!)
+const videoFileIds = (days: PlanDay[], exercises: { media?: MediaItem[] }[]) => [
+  ...new Set([...days.flatMap((d) => videoIdsOf(d.media)), ...exercises.flatMap((e) => videoIdsOf(e.media))]),
+]
+const withoutVideos = (media: MediaItem[] = []) => media.filter((m) => !isVideoFile(m))
+const remapMedia = (media: MediaItem[] | undefined, mapOpt: (id?: string) => string | undefined) =>
+  media?.map((m) => ({ ...m, id: uid(), fileId: mapOpt(m.fileId) }))
 
 /** Informações para a tela de exportação (tamanhos e contagens) */
 export async function exportInfo(projectId: string) {
@@ -71,8 +77,8 @@ export async function exportInfo(projectId: string) {
     sessions: d.sessions.length,
     sets: d.sets.length,
     photos: d.photos.length,
-    videos: videoFileIds(d.planDays).length,
-    videosSize: await sizeOf(videoFileIds(d.planDays)),
+    videos: videoFileIds(d.planDays, [...d.planExercises, ...d.sessionExercises]).length,
+    videosSize: await sizeOf(videoFileIds(d.planDays, [...d.planExercises, ...d.sessionExercises])),
     photosSize: await sizeOf(d.photos.map((p) => p.fileId)),
     equipSize: await sizeOf(equipIds),
   }
@@ -86,13 +92,13 @@ export async function exportProject(
   const full = opts.scope === 'full'
 
   // vídeos da galeria podem ser grandes: opcionais
-  const planDays = d.planDays.map((day) => ({
-    ...day,
-    media: opts.includeVideos ? day.media : day.media.filter((m) => m.kind !== 'video-file'),
-  }))
+  const strip = <T extends { media?: MediaItem[] }>(x: T): T =>
+    opts.includeVideos ? x : { ...x, media: x.media && withoutVideos(x.media) }
+  const planDays = d.planDays.map((day) => ({ ...strip(day), media: strip(day).media ?? [] }))
+  const planExercises = d.planExercises.map(strip)
 
   const sessions = full ? d.sessions : []
-  const sessionExercises = full ? d.sessionExercises : []
+  const sessionExercises = full ? d.sessionExercises.map(strip) : []
   const sets = full ? d.sets : []
   const photos = full ? d.photos : []
 
@@ -102,8 +108,10 @@ export async function exportProject(
 
   const fileIds = new Set<string>()
   planDays.forEach((day) => day.media.forEach((m) => m.fileId && fileIds.add(m.fileId)))
-  d.planExercises.forEach((e) => e.equipmentPhotoId && fileIds.add(e.equipmentPhotoId))
-  sessionExercises.forEach((e) => e.equipmentPhotoId && fileIds.add(e.equipmentPhotoId))
+  ;[...planExercises, ...sessionExercises].forEach((e) => {
+    if (e.equipmentPhotoId) fileIds.add(e.equipmentPhotoId)
+    e.media?.forEach((m) => m.fileId && fileIds.add(m.fileId))
+  })
   photos.forEach((p) => fileIds.add(p.fileId))
 
   const files: FileEntry[] = []
@@ -119,7 +127,7 @@ export async function exportProject(
     exportedAt: new Date().toISOString(),
     project,
     planDays,
-    planExercises: d.planExercises,
+    planExercises,
     sessions,
     sessionExercises,
     sets,
@@ -200,7 +208,14 @@ export async function importProject(data: ProjectFile, opts: ImportOptions): Pro
   }
   const planExercises: PlanExercise[] = data.planExercises
     .filter((e) => ids.has(e.dayId))
-    .map((e) => ({ ...e, id: map(e.id), dayId: map(e.dayId), projectId, equipmentPhotoId: mapOpt(e.equipmentPhotoId) }))
+    .map((e) => ({
+      ...e,
+      id: map(e.id),
+      dayId: map(e.dayId),
+      projectId,
+      equipmentPhotoId: mapOpt(e.equipmentPhotoId),
+      media: remapMedia(e.media, mapOpt),
+    }))
 
   let sessions: Session[] = []
   let sessionExercises: SessionExercise[] = []
@@ -220,6 +235,7 @@ export async function importProject(data: ProjectFile, opts: ImportOptions): Pro
         sessionId: map(e.sessionId),
         projectId,
         equipmentPhotoId: mapOpt(e.equipmentPhotoId),
+        media: remapMedia(e.media, mapOpt),
         planExerciseId: e.planExerciseId && ids.has(e.planExerciseId) ? map(e.planExerciseId) : undefined,
       }))
     sets = data.sets
@@ -246,8 +262,10 @@ export async function importProject(data: ProjectFile, opts: ImportOptions): Pro
   // apenas os arquivos realmente usados pelo que foi importado
   const used = new Set<string>()
   planDays.forEach((d) => d.media.forEach((m) => m.fileId && used.add(m.fileId)))
-  planExercises.forEach((e) => e.equipmentPhotoId && used.add(e.equipmentPhotoId))
-  sessionExercises.forEach((e) => e.equipmentPhotoId && used.add(e.equipmentPhotoId))
+  ;[...planExercises, ...sessionExercises].forEach((e) => {
+    if (e.equipmentPhotoId) used.add(e.equipmentPhotoId)
+    e.media?.forEach((m) => m.fileId && used.add(m.fileId))
+  })
   photos.forEach((p) => used.add(p.fileId))
 
   const files: StoredFile[] = []
@@ -260,8 +278,10 @@ export async function importProject(data: ProjectFile, opts: ImportOptions): Pro
   // remove referências a arquivos que não vieram no arquivo exportado
   const have = new Set(files.map((f) => f.id))
   planDays.forEach((d) => (d.media = d.media.filter((m) => !m.fileId || have.has(m.fileId))))
-  planExercises.forEach((e) => e.equipmentPhotoId && !have.has(e.equipmentPhotoId) && (e.equipmentPhotoId = undefined))
-  sessionExercises.forEach((e) => e.equipmentPhotoId && !have.has(e.equipmentPhotoId) && (e.equipmentPhotoId = undefined))
+  ;[...planExercises, ...sessionExercises].forEach((e) => {
+    if (e.equipmentPhotoId && !have.has(e.equipmentPhotoId)) e.equipmentPhotoId = undefined
+    if (e.media) e.media = e.media.filter((m) => !m.fileId || have.has(m.fileId))
+  })
   const validPhotos = photos.filter((p) => have.has(p.fileId))
 
   await db.transaction(

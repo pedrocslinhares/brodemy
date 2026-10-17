@@ -12,6 +12,7 @@ import {
   History,
   Pencil,
   Play,
+  PlayCircle,
   Plus,
   Settings2,
   Trash2,
@@ -189,7 +190,7 @@ export default function SessionPage() {
       {day && day.media.length > 0 && (
         <div className="card">
           <button className="collapse-head" onClick={() => setMediaOpen(!mediaOpen)}>
-            <strong>Vídeos e referências ({day.media.length})</strong>
+            <strong>Vídeos e referências do treino ({day.media.length})</strong>
             {mediaOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
           </button>
           {mediaOpen && (
@@ -260,6 +261,13 @@ function ExerciseCard({ ex, session, sets, index, list }: {
   const [editOpen, setEditOpen] = useState(false)
   const [fieldsOpen, setFieldsOpen] = useState(false)
   const [photoOpen, setPhotoOpen] = useState(false)
+  const [mediaOpen, setMediaOpen] = useState(false)
+  // treinos iniciados antes desta versão não copiaram os vídeos: usa os do plano
+  const planMedia = useLiveQuery(
+    async () => (!ex.media?.length && ex.planExerciseId ? (await db.planExercises.get(ex.planExerciseId))?.media : undefined),
+    [ex.media?.length, ex.planExerciseId],
+  )
+  const media = ex.media?.length ? ex.media : planMedia ?? []
   const prev = useLiveQuery(() => previousSets(ex.nameKey, session.id, session.date), [ex.nameKey, session.id, session.date])
 
   const cols = ex.fields.filter((f) => f !== 'note')
@@ -300,6 +308,17 @@ function ExerciseCard({ ex, session, sets, index, list }: {
       </div>
 
       {ex.notes && <div className="small muted pre">{ex.notes}</div>}
+
+      {media.length > 0 && (
+        <div className="exec-media">
+          <button className="exec-toggle" onClick={() => setMediaOpen(!mediaOpen)}>
+            <PlayCircle size={18} />
+            <span className="grow">Ver execução ({media.length})</span>
+            {mediaOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+          </button>
+          {mediaOpen && <MediaSection items={media} />}
+        </div>
+      )}
 
       {prev && (
         <div className="prev-line small">
@@ -476,7 +495,9 @@ function AddExerciseModal({ open, onClose, session }: { open: boolean; onClose: 
     await addSessionExercise(session, {
       name: name.trim(),
       equipment: equipment.trim() || last?.equipment || '',
-      ...(last ? { fields: last.fields, restSec: last.restSec, equipmentPhotoId: last.equipmentPhotoId } : {}),
+      ...(last
+        ? { fields: last.fields, restSec: last.restSec, equipmentPhotoId: last.equipmentPhotoId, media: last.media }
+        : {}),
     })
     setName('')
     setEquipment('')

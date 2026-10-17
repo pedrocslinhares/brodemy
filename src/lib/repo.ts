@@ -25,8 +25,11 @@ export async function addImageFile(file: Blob): Promise<string> {
 export async function cleanupOrphanFiles() {
   const used = new Set<string>()
   ;(await db.photos.toArray()).forEach((p) => used.add(p.fileId))
-  ;(await db.planExercises.toArray()).forEach((e) => e.equipmentPhotoId && used.add(e.equipmentPhotoId))
-  ;(await db.sessionExercises.toArray()).forEach((e) => e.equipmentPhotoId && used.add(e.equipmentPhotoId))
+  const exercises = [...(await db.planExercises.toArray()), ...(await db.sessionExercises.toArray())]
+  exercises.forEach((e) => {
+    if (e.equipmentPhotoId) used.add(e.equipmentPhotoId)
+    e.media?.forEach((m) => m.fileId && used.add(m.fileId))
+  })
   ;(await db.planDays.toArray()).forEach((d) => d.media.forEach((m) => m.fileId && used.add(m.fileId)))
   const all = await db.files.toCollection().primaryKeys()
   const orphans = all.filter((id) => !used.has(id))
@@ -205,6 +208,7 @@ export async function startSession(projectId: string, dayId?: string, date = tod
         restSec: e.restSec,
         target: e.target,
         notes: '',
+        media: e.media?.map((m) => ({ ...m })),
         planExerciseId: e.id,
       })),
     )

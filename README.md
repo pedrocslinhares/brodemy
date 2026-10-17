@@ -8,7 +8,7 @@ Funciona offline, instala no Android como app e guarda tudo num banco de dados e
 - **Projetos de progressão**: vários projetos ativos ao mesmo tempo, cada um com nome, objetivos, foto do dia 1, foto final e feedback ao encerrar. Encerrar não apaga nada: dá para reabrir ou criar um novo projeto copiando o plano.
 - **Plano semanal por projeto**: cada dia (seg–dom) tem nome do treino, tipo (Academia/Street/Calistenia/Outro), anotações, vídeos e links de referência, e a lista de exercícios.
 - **Vídeos**: links do YouTube (incluindo Shorts) tocam dentro do app. Também aceita vídeo da galeria ou link direto `.mp4`. Outros links abrem no navegador.
-- **Exercícios**: nome, equipamento, **foto do equipamento**, meta (ex.: 4x10-12), descanso padrão e quais campos registrar.
+- **Exercícios**: nome, equipamento, **foto do equipamento**, **vídeos e links de execução** (tocam dentro do treino em "Ver execução"), meta (ex.: 4x10-12), descanso padrão e quais campos registrar.
 - **Registro do treino**: séries ilimitadas, adicionadas conforme você executa. Todos os campos são opcionais: carga, repetições, tempo, distância, descanso e observação. Cada nova série copia os valores da anterior.
 - **Timer de descanso**: ▶ em cada série, com contagem regressiva, ±15s, pausa, som e vibração. A tela fica acesa durante o treino.
 - **Último treino**: cada exercício mostra o que você fez da última vez.

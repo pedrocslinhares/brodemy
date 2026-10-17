@@ -5,6 +5,7 @@ import { db, type ExerciseBase } from '../db'
 import { addImageFile } from '../lib/repo'
 import { formatDuration, parseDuration } from '../lib/utils'
 import { CommitInput, CommitTextarea, Field, FieldPicker, FileImage, ImageViewer, PhotoButtons } from './ui'
+import { MediaSection } from './MediaSection'
 
 /** Sugestões de nomes já usados (datalist id="exercise-names") */
 export function ExerciseNames() {
@@ -64,6 +65,12 @@ export function ExerciseEditor({ ex, onPatch }: {
             cameraLabel={ex.equipmentPhotoId ? 'Trocar' : 'Câmera'}
             onFile={async (f) => onPatch({ equipmentPhotoId: await addImageFile(f) })}
           />
+        </div>
+      </div>
+      <div className="field">
+        <span className="field-label">Vídeos e links de execução</span>
+        <div className="media-box">
+          <MediaSection items={ex.media ?? []} editable onChange={(media) => onPatch({ media })} />
         </div>
       </div>
       <div className="grid-2">

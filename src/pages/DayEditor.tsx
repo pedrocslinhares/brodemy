@@ -64,7 +64,7 @@ export default function DayEditor() {
         </Field>
       </div>
 
-      <div className="section-label">Vídeos e referências</div>
+      <div className="section-label">Vídeos e referências do treino</div>
       <div className="card">
         <MediaSection items={day.media} editable onChange={(media) => patch({ media })} />
       </div>
@@ -115,7 +115,12 @@ function PlanExerciseCard({ ex, index, list, open, onToggle }: {
           <div className="grow min0 left">
             <strong className="ellipsis block">{ex.name || 'Novo exercício'}</strong>
             <div className="muted small ellipsis">
-              {[ex.equipment, ex.target, ex.restSec ? `desc. ${formatDuration(ex.restSec)}` : '']
+              {[
+                ex.equipment,
+                ex.target,
+                ex.restSec ? `desc. ${formatDuration(ex.restSec)}` : '',
+                ex.media?.length ? `▶ ${ex.media.length} vídeo/link` : '',
+              ]
                 .filter(Boolean)
                 .join(' · ') || 'Toque para editar'}
             </div>
