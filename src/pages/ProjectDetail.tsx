@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { Camera, CheckCircle2, ChevronRight, Copy, Pencil, Play, RotateCcw, Trash2, Columns2 } from 'lucide-react'
+import { Camera, CheckCircle2, ChevronRight, Copy, Pencil, Play, RotateCcw, Share2, Trash2, Columns2 } from 'lucide-react'
 import { db, type Photo, type PhotoKind } from '../db'
 import { addPhoto, deletePhoto, deleteProject, setProjectPhoto, startSession } from '../lib/repo'
 import { setVolume } from '../lib/stats'
@@ -18,6 +18,7 @@ import {
   useObjectUrl,
 } from '../components/ui'
 import { SessionList } from '../components/SessionList'
+import { ExportProjectModal } from '../components/ProjectTransfer'
 import { daysBetween, fmtNum, formatDate, todayISO, WEEK_ORDER, WEEKDAYS } from '../lib/utils'
 
 const TABS = [
@@ -85,6 +86,7 @@ export default function ProjectDetail() {
 function Overview({ projectId }: { projectId: string }) {
   const nav = useNavigate()
   const [finishOpen, setFinishOpen] = useState(false)
+  const [exportOpen, setExportOpen] = useState(false)
   const [viewer, setViewer] = useState<Photo | null>(null)
 
   const data = useLiveQuery(async () => {
@@ -179,6 +181,9 @@ function Overview({ projectId }: { projectId: string }) {
             <RotateCcw size={18} /> Reabrir projeto
           </button>
         )}
+        <button className="btn btn-ghost" onClick={() => setExportOpen(true)}>
+          <Share2 size={18} /> Exportar projeto
+        </button>
         <Link to={`/projetos/novo?copy=${projectId}`} className="btn btn-ghost">
           <Copy size={18} /> Novo projeto com este plano
         </Link>
@@ -187,6 +192,12 @@ function Overview({ projectId }: { projectId: string }) {
         </button>
       </div>
 
+      <ExportProjectModal
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
+        projectId={projectId}
+        projectName={project.name}
+      />
       <FinishProjectModal open={finishOpen} onClose={() => setFinishOpen(false)} projectId={projectId} />
       <PhotoViewerModal photo={viewer} onClose={() => setViewer(null)} />
     </div>

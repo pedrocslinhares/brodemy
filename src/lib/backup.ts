@@ -1,18 +1,11 @@
 import { db, type StoredFile } from '../db'
+import { blobToDataURL } from './utils'
 
 /*
  * Cópia de segurança: os dados vivem no banco embutido (IndexedDB).
  * Este arquivo serve apenas para levar os dados para outro aparelho
  * ou guardar uma cópia fora do celular.
  */
-
-const blobToDataURL = (b: Blob) =>
-  new Promise<string>((res, rej) => {
-    const r = new FileReader()
-    r.onload = () => res(r.result as string)
-    r.onerror = () => rej(r.error)
-    r.readAsDataURL(b)
-  })
 
 export async function exportBackup(): Promise<Blob> {
   const tables: Record<string, unknown[]> = {}

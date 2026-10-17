@@ -326,3 +326,11 @@ input[type='checkbox'] { width: 22px; height: 22px; accent-color: var(--accent);
   .modal-backdrop { align-items: center; }
   .modal { border-radius: 20px; }
 }
+
+/* ---------- opções (radio/checkbox em card) ---------- */
+.option { display: flex; align-items: flex-start; gap: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); cursor: pointer; }
+.option.active { border-color: var(--accent); }
+.option.disabled { cursor: default; }
+.option.disabled:not(.active) { opacity: 0.55; }
+.option input { margin-top: 2px; flex-shrink: 0; width: 20px; height: 20px; accent-color: var(--accent); }
+.option strong { display: block; margin-bottom: 2px; }

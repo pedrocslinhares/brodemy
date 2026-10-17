@@ -185,3 +185,14 @@ export async function shareFile(blob: Blob, filename: string): Promise<boolean> 
   downloadBlob(blob, filename)
   return true
 }
+
+export const blobToDataURL = (b: Blob) =>
+  new Promise<string>((res, rej) => {
+    const r = new FileReader()
+    r.onload = () => res(r.result as string)
+    r.onerror = () => rej(r.error)
+    r.readAsDataURL(b)
+  })
+
+export const slug = (s: string) =>
+  normalizeKey(s).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'projeto'

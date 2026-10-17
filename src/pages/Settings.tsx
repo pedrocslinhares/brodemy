@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { Database, Download, FileSpreadsheet, Share2, Timer, Upload } from 'lucide-react'
+import { Database, Download, FileSpreadsheet, FolderInput, Share2, Timer, Upload } from 'lucide-react'
 import { db } from '../db'
 import { exportBackup, importBackup } from '../lib/backup'
 import { projectsCSV, sessionsCSV, setsCSV } from '../lib/csv'
 import { saveTimerSettings, useTimerSettings } from '../lib/settings'
 import { CommitInput, Field, PageHeader } from '../components/ui'
+import { ImportProjectButton } from '../components/ProjectTransfer'
 import { downloadBlob, formatBytes, formatDuration, parseDuration, shareFile, todayISO } from '../lib/utils'
 
 export default function Settings() {
@@ -123,6 +124,18 @@ export default function Settings() {
           </div>
         ))}
         <div className="muted small">Separador ";" — abre direto no Excel ou Google Planilhas.</div>
+      </div>
+
+      <div className="section-label">
+        <FolderInput size={14} /> Compartilhar e migrar projetos
+      </div>
+      <div className="card stack-sm">
+        <div className="small">
+          Para <b>exportar</b>, abra o projeto e toque em <b>Exportar projeto</b>: escolha só o plano (para
+          compartilhar) ou o projeto completo (para migrar). Para <b>importar</b>, escolha o arquivo recebido. O projeto é
+          adicionado sem alterar os que você já tem.
+        </div>
+        <ImportProjectButton className="btn btn-ghost" label="Importar projeto" />
       </div>
 
       <div className="section-label">

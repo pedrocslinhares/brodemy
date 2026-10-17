@@ -16,6 +16,7 @@ Funciona offline, instala no Android como app e guarda tudo num banco de dados e
 - **Fotos**: galeria por projeto, com comparação lado a lado de duas datas.
 - **Evolução**: frequência semanal, carga máxima, 1RM estimada, volume, repetições, tempo e distância por exercício, com variação % e recorde.
 - **Relatórios CSV**: séries (detalhado), treinos (resumo) e projetos. Usa separador `;` e abre no Excel ou no Google Planilhas.
+- **Exportar/importar projeto**: no projeto, **Exportar projeto** gera um arquivo com *somente o plano* (dias, exercícios, fotos dos equipamentos, vídeos e links), para compartilhar, ou com o *projeto completo* (plano + treinos, séries e fotos de progresso), para migrar de celular. Os vídeos da galeria são opcionais. Na importação (Projetos → Importar), você escolhe importar só o plano ou também os treinos e as fotos. O projeto é **adicionado** sem alterar os que já existem.
 - **Backup**: exporta e restaura todos os dados, incluindo fotos e vídeos, num arquivo `.json`.
 
 ## Onde ficam os dados

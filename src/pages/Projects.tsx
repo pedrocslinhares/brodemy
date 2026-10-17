@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { ChevronRight, FolderOpen, Plus } from 'lucide-react'
 import { db, type Photo, type Project } from '../db'
 import { Empty, FileImage, PageHeader } from '../components/ui'
+import { ImportProjectButton } from '../components/ProjectTransfer'
 import { daysBetween, formatDate, todayISO } from '../lib/utils'
 
 export default function Projects() {
@@ -45,18 +46,24 @@ export default function Projects() {
         title="Projetos"
         subtitle="Seus ciclos de evolução"
         right={
-          <Link to="/projetos/novo" className="btn btn-sm">
-            <Plus size={16} /> Novo
-          </Link>
+          <>
+            <ImportProjectButton />
+            <Link to="/projetos/novo" className="btn btn-sm">
+              <Plus size={16} /> Novo
+            </Link>
+          </>
         }
       />
       {data.projects.length === 0 && (
         <Empty icon={<FolderOpen size={36} />} title="Nenhum projeto ainda">
           Crie um projeto com seus objetivos e a foto do dia 1.
           <div style={{ marginTop: 16 }}>
-            <Link to="/projetos/novo" className="btn">
-              Criar primeiro projeto
-            </Link>
+            <div className="row gap-sm" style={{ justifyContent: 'center' }}>
+              <Link to="/projetos/novo" className="btn">
+                Criar primeiro projeto
+              </Link>
+              <ImportProjectButton className="btn btn-ghost" label="Importar" />
+            </div>
           </div>
         </Empty>
       )}
